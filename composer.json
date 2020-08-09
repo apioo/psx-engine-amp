@@ -1,0 +1,24 @@
+{
+  "name": "psx/engine-amp",
+  "keywords": ["psx", "engine", "framework", "amp"],
+  "homepage": "http://phpsx.org",
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "Christoph Kappestein",
+      "email": "christoph.kappestein@gmail.com",
+      "homepage": "http://christoph.kappestein.com/"
+    }
+  ],
+  "require": {
+    "php": ">=7.2",
+    "psx/engine": "^0.1",
+    "amphp/http-server": "^2.0",
+    "amphp/log": "^1.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "PSX\\Engine\\Amp\\": "src/"
+    }
+  }
+}
