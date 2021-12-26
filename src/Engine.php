@@ -47,29 +47,15 @@ use PSX\Uri\Uri;
  */
 class Engine implements EngineInterface
 {
-    /**
-     * @var string
-     */
-    protected $ip;
+    private string $ip;
+    private int $port;
 
-    /**
-     * @var integer
-     */
-    protected $port;
-
-    /**
-     * @param string $ip
-     * @param integer $port
-     */
-    public function __construct($ip = '0.0.0.0', $port = 8080)
+    public function __construct(string $ip = '0.0.0.0', int $port = 8080)
     {
         $this->ip   = $ip;
         $this->port = $port;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function serve(DispatchInterface $dispatch): void
     {
         Loop::run(function () use ($dispatch) {
