@@ -1,7 +1,7 @@
 <?php
 /*
- * PSX is a open source PHP framework to develop RESTful APIs.
- * For the current version and informations visit <http://phpsx.org>
+ * PSX is an open source PHP framework to develop RESTful APIs.
+ * For the current version and information visit <https://phpsx.org>
  *
  * Copyright 2010-2020 Christoph Kappestein <christoph.kappestein@gmail.com>
  *
@@ -43,7 +43,7 @@ use PSX\Uri\Uri;
  * @see     https://github.com/amphp/http-server
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.apache.org/licenses/LICENSE-2.0
- * @link    http://phpsx.org
+ * @link    https://phpsx.org
  */
 class Engine implements EngineInterface
 {
