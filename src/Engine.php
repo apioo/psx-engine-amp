@@ -20,22 +20,16 @@
 
 namespace PSX\Engine\Amp;
 
-use Amp\ByteStream\ResourceOutputStream;
-use Amp\Http\Server\Request as AerysRequest;
-use Amp\Http\Server\RequestHandler\CallableRequestHandler;
-use Amp\Http\Server\Response as AerysResponse;
-use Amp\Http\Server\Server;
+use Amp;
+use Amp\ByteStream;
+use Amp\Http\Server\DefaultErrorHandler;
+use Amp\Http\Server\SocketHttpServer;
 use Amp\Log\ConsoleFormatter;
 use Amp\Log\StreamHandler;
-use Amp\Loop;
-use Amp\Socket;
 use Monolog\Logger;
+use Monolog\Processor\PsrLogMessageProcessor;
 use PSX\Engine\DispatchInterface;
 use PSX\Engine\EngineInterface;
-use PSX\Http\Request;
-use PSX\Http\Server\ResponseFactory;
-use PSX\Http\Stream\StringStream;
-use PSX\Uri\Uri;
 
 /**
  * Uses the AMP HTTP server
@@ -52,43 +46,28 @@ class Engine implements EngineInterface
 
     public function __construct(string $ip = '0.0.0.0', int $port = 8080)
     {
-        $this->ip   = $ip;
+        $this->ip = $ip;
         $this->port = $port;
     }
 
     public function serve(DispatchInterface $dispatch): void
     {
-        Loop::run(function () use ($dispatch) {
-            $servers = [
-                Socket\Server::listen("{$this->ip}:{$this->port}"),
-            ];
+        $logHandler = new StreamHandler(ByteStream\getStdout());
+        $logHandler->pushProcessor(new PsrLogMessageProcessor());
+        $logHandler->setFormatter(new ConsoleFormatter());
 
-            // logger
-            $logHandler = new StreamHandler(new ResourceOutputStream(\STDOUT));
-            $logHandler->setFormatter(new ConsoleFormatter());
-            $logger = new Logger('server');
-            $logger->pushHandler($logHandler);
+        $logger = new Logger('server');
+        $logger->pushHandler($logHandler);
 
-            // server
-            $callable = function (AerysRequest $aerysRequest) use ($dispatch) {
-                $request  = new Request(new Uri($aerysRequest->getUri()->__toString()), $aerysRequest->getMethod(), $aerysRequest->getHeaders());
-                $response = (new ResponseFactory())->createResponse();
+        $requestHandler = new Handler($dispatch);
+        $errorHandler = new DefaultErrorHandler();
 
-                // read body
-                if (in_array($aerysRequest->getMethod(), ['POST', 'PUT', 'DELETE', 'PATCH'])) {
-                    $body = yield $aerysRequest->getBody()->buffer();
-                    $request->setBody(new StringStream($body));
-                }
+        $server = SocketHttpServer::createForDirectAccess($logger);
+        $server->expose($this->ip . ':' . $this->port);
+        $server->start($requestHandler, $errorHandler);
 
-                $response = $dispatch->route($request, $response);
+        Amp\trapSignal([SIGINT, SIGTERM]);
 
-                // send response
-                return new AerysResponse($response->getStatusCode() ?: 200, $response->getHeaders(), $response->getBody()->__toString());
-            };
-
-            $server = new Server($servers, new CallableRequestHandler($callable), $logger);
-
-            yield $server->start();
-        });
+        $server->stop();
     }
 }
