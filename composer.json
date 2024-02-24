@@ -12,7 +12,7 @@
   ],
   "require": {
     "php": ">=8.0",
-    "psx/engine": "^1.0",
+    "psx/engine": "^2.0",
     "amphp/http-server": "^3.0",
     "amphp/log": "^2.0"
   },
